@@ -8,7 +8,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS customizado para melhor aparência
+# ==============================
+# REDIRECIONAMENTO SE LOGADO
+# ==============================
+if st.session_state.get("usuario"):
+    st.switch_page("pages/dashboard.py")
+
+# ==============================
+# ESTILO
+# ==============================
 st.markdown("""
     <style>
         .login-header {
@@ -19,22 +27,15 @@ st.markdown("""
             font-size: 2.5em;
             font-weight: bold;
             color: #1f77b4;
-            margin-bottom: 10px;
         }
         .login-subtitle {
             font-size: 1.2em;
             color: #666;
             margin-bottom: 20px;
         }
-        .login-form {
-            background-color: #f8f9fa;
-            padding: 30px;
-            border-radius: 10px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
-# Header
 st.markdown("""
     <div class="login-header">
         <div class="login-title">🏋️ FitLife</div>
@@ -42,41 +43,35 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Verificar se usuário já está autenticado
-if "usuario" in st.session_state and st.session_state["usuario"] is not None:
-    st.switch_page("pages/dashboard.py")
-
-# Formulário de login
 st.markdown("### Bem-vindo de volta!")
-st.markdown("Entre com suas credenciais para acessar o dashboard.")
+st.markdown("Entre com suas credenciais para acessar o sistema.")
 
+# ==============================
+# INICIALIZA SESSION STATE
+# ==============================
+if "usuario" not in st.session_state:
+    st.session_state["usuario"] = None
+
+# ==============================
+# FORM LOGIN
+# ==============================
 with st.form("login_form", border=True):
-    email = st.text_input(
-        "📧 Email",
-        placeholder="seu-email@exemplo.com"
-    )
-    senha = st.text_input(
-        "🔐 Senha",
-        type="password",
-        placeholder="Digite sua senha"
-    )
-    
-    submit_button = st.form_submit_button(
-        "🚀 Entrar",
-        use_container_width=True,
-        type="primary"
-    )
+    email = st.text_input("📧 Email")
+    senha = st.text_input("🔐 Senha", type="password")
 
-# Processar login
-if submit_button:
+    submit = st.form_submit_button("🚀 Entrar", use_container_width=True)
+
+# ==============================
+# LOGIN LOGIC
+# ==============================
+if submit:
     if not email or not senha:
-        st.error("❌ Por favor, preencha todos os campos.")
+        st.error("❌ Preencha todos os campos.")
     else:
         try:
-            # Autenticar usuário
             usuario = autenticar_usuario(email, senha)
-            
-            # Armazenar na sessão
+
+            # salva sessão (SEM depender de reload imediato)
             st.session_state["usuario"] = {
                 "id": usuario.id,
                 "nome": usuario.nome,
@@ -85,24 +80,25 @@ if submit_button:
                 "peso": usuario.peso,
                 "altura": usuario.altura,
             }
-            
+
             st.success("✅ Login realizado com sucesso!")
             st.balloons()
-            
-            # Redirecionar para dashboard
-            import time
-            time.sleep(1)
-            st.switch_page("pages/dashboard.py")
-            
+
+            # força rerun antes de navegar (evita bug no cloud)
+            st.rerun()
+
         except ValueError as e:
             st.error(f"❌ {str(e)}")
-        except Exception as e:
-            st.error(f"❌ Erro ao realizar login: {str(e)}")
 
-# Divisor
+        except Exception as e:
+            st.error("❌ Erro inesperado no login.")
+            st.exception(e)
+
+# ==============================
+# LINKS
+# ==============================
 st.divider()
 
-# Links adicionais
 col1, col2 = st.columns(2)
 
 with col1:
@@ -110,14 +106,14 @@ with col1:
         st.switch_page("pages/cadastro.py")
 
 with col2:
-    if st.button("🔑 Esqueci minha senha", use_container_width=True):
-        st.info("ℹ️ Funcionalidade em breve...", icon="ℹ️")
+    if st.button("🔑 Esqueci senha", use_container_width=True):
+        st.info("Funcionalidade em desenvolvimento")
 
-# Rodapé
+# ==============================
+# FOOTER
+# ==============================
 st.markdown("---")
 st.markdown(
-    "<div style='text-align: center; color: #999; font-size: 0.9em;'>"
-    "© 2026 FitLife - Todos os direitos reservados"
-    "</div>",
+    "<div style='text-align: center; color: #999;'>© 2026 FitLife</div>",
     unsafe_allow_html=True
 )

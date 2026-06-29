@@ -1,19 +1,35 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="FitLife - Rotina Fitness Integrada",
+    page_title="FitLife",
     page_icon="🏋️",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="centered"
 )
 
-# Inicializar session state
+# Inicializar sessão
 if "usuario" not in st.session_state:
     st.session_state["usuario"] = None
 
-# Se o usuário está autenticado, redirecionar para dashboard
-if st.session_state["usuario"] is not None:
-    st.switch_page("pages/dashboard.py")
+st.title("🏋️ FitLife")
 
-# Caso contrário, redirecionar para login
-st.switch_page("pages/login.py")
+st.write("Sistema de rotina fitness integrada")
+
+# Controle de navegação simples
+if st.session_state["usuario"]:
+    st.success(f"Logado como {st.session_state['usuario']['nome']}")
+
+    if st.button("Ir para Dashboard"):
+        st.switch_page("pages/dashboard.py")
+
+    if st.button("Sair"):
+        st.session_state["usuario"] = None
+        st.rerun()
+
+else:
+    st.warning("Você não está logado")
+
+    if st.button("Ir para Login"):
+        st.switch_page("pages/login.py")
+
+    if st.button("Criar conta"):
+        st.switch_page("pages/cadastro.py")
